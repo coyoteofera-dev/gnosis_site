@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo · Editora Gnosis Carajás</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    <style>
+        .cartao-livro-horizontal {
+            display: grid;
+            grid-template-columns: 160px 1fr;
+            gap: 1.8rem;
+            background: var(--branco);
+            border-radius: var(--raio);
+            box-shadow: var(--sombra-suave);
+            padding: 1.5rem;
+            transition: box-shadow var(--transicao), transform var(--transicao);
+            margin-bottom: 1.5rem;
+        }
+        .cartao-livro-horizontal:hover {
+            box-shadow: var(--sombra-media);
+            transform: translateY(-2px);
+        }
+        .cartao-livro-horizontal .capa-pequena {
+            width: 100%;
+            aspect-ratio: 2 / 3;
+            object-fit: cover;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(10, 42, 94, 0.15);
+        }
+        .cartao-livro-horizontal .conteudo {
+            display: flex;
+            flex-direction: column;
+        }
+        .cartao-livro-horizontal h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.3rem;
+        }
+        .cartao-livro-horizontal .autores-completo {
+            color: var(--cinza-texto);
+            font-style: italic;
+            font-size: 0.95rem;
+            margin-bottom: 0.8rem;
+        }
+        .cartao-livro-horizontal .resumo {
+            font-size: 0.95rem;
+            color: var(--cinza-texto);
+            margin-bottom: 0.8rem;
+            flex: 1;
+        }
+        .cartao-livro-horizontal .metadados {
+            font-size: 0.85rem;
+            color: var(--cinza-texto);
+            margin-bottom: 1rem;
+            padding-top: 0.6rem;
+            border-top: 1px solid var(--cinza-medio);
+        }
+        @media (max-width: 640px) {
+            .cartao-livro-horizontal {
+                grid-template-columns: 1fr;
+                gap: 1.2rem;
+            }
+            .cartao-livro-horizontal .capa-pequena {
+                max-width: 140px;
+                margin: 0 auto;
+            }
+        }
+
+        /* Sistema de busca */
+        .busca-catalogo {
+            background: var(--branco);
+            padding: 1.5rem;
+            border-radius: var(--raio);
+            box-shadow: var(--sombra-suave);
+            margin-bottom: 2rem;
+        }
+
+        .busca-campo {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: var(--cinza-claro);
+            border: 2px solid transparent;
+            border-radius: var(--raio);
+            transition: border-color var(--transicao);
+            margin-bottom: 1rem;
+        }
+
+        .busca-campo:focus-within {
+            border-color: var(--verde-institucional);
+            background: var(--branco);
+        }
+
+        .busca-icone {
+            padding: 0 0.8rem 0 1rem;
+            font-size: 1.1rem;
+            color: var(--cinza-texto);
+        }
+
+        #campo-busca {
+            flex: 1;
+            border: 0;
+            background: transparent;
+            padding: 0.9rem 0;
+            font-family: var(--fonte-texto);
+            font-size: 1rem;
+            outline: none;
+            color: var(--preto-suave);
+        }
+
+        .busca-limpar {
+            background: none;
+            border: 0;
+            font-size: 1.4rem;
+            color: var(--cinza-texto);
+            cursor: pointer;
+            padding: 0 1rem;
+            line-height: 1;
+            transition: color var(--transicao);
+        }
+
+        .busca-limpar:hover {
+            color: var(--verde-institucional);
+        }
+
+        .busca-filtros {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .filtro-tag {
+            background: var(--cinza-claro);
+            color: var(--cinza-texto);
+            border: 1.5px solid transparent;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-family: var(--fonte-texto);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transicao);
+        }
+
+        .filtro-tag:hover {
+            border-color: var(--verde-institucional);
+            color: var(--verde-escuro);
+        }
+
+        .filtro-tag.ativo {
+            background: var(--verde-institucional);
+            color: var(--branco);
+            border-color: var(--verde-institucional);
+        }
+
+        .busca-resultado {
+            margin: 1rem 0 0;
+            font-size: 0.9rem;
+            color: var(--cinza-texto);
+            font-style: italic;
+        }
+
+        .sem-resultados {
+            text-align: center;
+            padding: 3rem 1rem;
+            background: var(--cinza-claro);
+            border-radius: var(--raio);
+        }
+
+        .destaque-busca {
+            background: rgba(243, 215, 35, 0.4);
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+
+        /* Badges de tipo de obra */
+        .tipo-obra {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.7rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 0.7rem;
+            align-self: flex-start;
+        }
+
+        .tipo-autoral {
+            background: rgba(10, 42, 94, 0.1);
+            color: var(--azul-profundo);
+            border: 1.5px solid var(--azul-profundo);
+        }
+
+        .tipo-coletanea {
+            background: rgba(30, 169, 59, 0.12);
+            color: var(--verde-escuro);
+            border: 1.5px solid var(--verde-institucional);
+        }
+
+        .tipo-anais {
+            background: rgba(243, 215, 35, 0.2);
+            color: #8a7400;
+            border: 1.5px solid #c9a800;
+        }
+
+        .cabecalho-cartao {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 0.4rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="cabecalho">
+        <div class="cabecalho-interno">
+            <a href="index.html" class="logo">
+                <img src="assets/logo.png" alt="Logotipo da Editora Gnosis Carajás">
+            </a>
+            <button class="menu-botao" aria-label="Abrir menu" onclick="document.querySelector('.menu').classList.toggle('aberto')">☰</button>
+            <nav>
+                <ul class="menu">
+                    <li><a href="index.html">Início</a></li>
+                    <li><a href="sobre.html">Sobre</a></li>
+                    <li><a href="catalogo.html" class="ativo">Catálogo</a></li>
+                    <li><a href="normas.html">Normas para Autores</a></li>
+                    <li><a href="contato.html">Contato</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="cabecalho-pagina">
+        <h1>Catálogo de Publicações</h1>
+        <p>Obras publicadas pela Editora Gnosis Carajás nas áreas de Educação, Ensino de Ciências e Matemática.</p>
+    </section>
+
+    <section class="secao">
+        <div class="secao-interna">
+
+            <div class="busca-catalogo">
+                <div class="busca-campo">
+                    <span class="busca-icone">🔍</span>
+                    <input type="text" id="campo-busca" placeholder="Buscar por título, autor, ISBN ou tema..." oninput="filtrarCatalogo()" autocomplete="off">
+                    <button class="busca-limpar" onclick="limparBusca()" title="Limpar busca" style="display: none;" id="botao-limpar">×</button>
+                </div>
+                <div class="busca-filtros">
+                    <button class="filtro-tag ativo" data-filtro="todos" onclick="filtrarPorTag(this)">Todos</button>
+                    <button class="filtro-tag" data-filtro="autoral" onclick="filtrarPorTag(this)">Autoral</button>
+                    <button class="filtro-tag" data-filtro="coletanea" onclick="filtrarPorTag(this)">Coletânea</button>
+                    <button class="filtro-tag" data-filtro="anais" onclick="filtrarPorTag(this)">Anais de Evento</button>
+                    <button class="filtro-tag" data-filtro="educacao" onclick="filtrarPorTag(this)">Educação</button>
+                    <button class="filtro-tag" data-filtro="ciencias" onclick="filtrarPorTag(this)">Ciências</button>
+                    <button class="filtro-tag" data-filtro="matematica" onclick="filtrarPorTag(this)">Matemática</button>
+                    <button class="filtro-tag" data-filtro="2025" onclick="filtrarPorTag(this)">2025</button>
+                    <button class="filtro-tag" data-filtro="2024" onclick="filtrarPorTag(this)">2024</button>
+                    <button class="filtro-tag" data-filtro="2023" onclick="filtrarPorTag(this)">2023</button>
+                    <button class="filtro-tag" data-filtro="2022" onclick="filtrarPorTag(this)">2022</button>
+                </div>
+                <p id="busca-resultado" class="busca-resultado" style="display: none;"></p>
+            </div>
+
+            <div id="lista-livros">
+
+            <article class="cartao-livro-horizontal" id="profept-ifmt-2025" data-tags="coletanea educacao formacao-professores 2025" data-busca="pesquisas desenvolvimento mestrado profissional educação profissional tecnológica ProfEPT IFMT Ângela Fátima da Rocha Marcelo Franco Leão EPT ensino médio integrado inclusão biblioteca interdisciplinaridade direitos humanos formação omnilateral 978-65-83547-13-2 2025 coletânea">
+                <img src="assets/capa_profept_2025.jpg" alt="Capa do livro Pesquisas em Desenvolvimento no Mestrado Profissional ProfEPT/IFMT (2025)" class="capa-pequena">
+                <div class="conteudo">
+                    <div class="cabecalho-cartao">
+                        <span class="tipo-obra tipo-coletanea">Coletânea</span>
+                        <span class="tag">Educação Profissional · 2025</span>
+                    </div>
+                    <h3>Pesquisas em Desenvolvimento no Mestrado Profissional em Educação Profissional e Tecnológica ProfEPT/IFMT (2025)</h3>
+                    <p class="autores-completo">Ângela Fátima da Rocha; Marcelo Franco Leão (Organizadores)</p>
+                    <p class="resumo">Coletânea com vinte textos elaborados por mestrandos do ProfEPT/IFMT, em coautoria com seus orientadores, apresentando pesquisas em andamento no campo da Educação Profissional e Tecnológica. Os capítulos contemplam temáticas como inclusão, letramento literário, ensino médio integrado, gestão escolar, interdisciplinaridade, direitos humanos, práticas de acolhimento, EJA, formação omnilateral e história da educação profissional.</p>
+                    <p class="metadados"><strong>ISBN:</strong> 978-65-83547-13-2 · <strong>Páginas:</strong> 164 · <strong>1ª edição, 2025</strong></p>
+                    <div class="cartao-livro-acoes">
+                        <a href="livros/pesquisas_profept_ifmt_2025.pdf" class="botao-livro botao-baixar" download>↓ Acessar PDF</a>
+                        <a href="livros/pesquisas_profept_ifmt_2025.pdf" class="botao-livro botao-detalhes" target="_blank">Visualizar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="cartao-livro-horizontal" id="ifmt-unic-2025" data-tags="coletanea educacao ciencias matematica 2025" data-busca="pesquisas desenvolvimento mestrado ensino IFMT UNIC PPGEn Marcelo Franco Leão Ângela Fátima da Rocha produção textual inteligência artificial tecnologias digitais letramento educação ambiental hanseníase educação infantil EJA escolas multisseriadas 978-65-83547-07-1 2025 coletânea">
+                <img src="assets/capa_ifmt_unic_2025.jpg" alt="Capa do livro Pesquisas em Desenvolvimento no Mestrado em Ensino IFMT/UNIC (2025)" class="capa-pequena">
+                <div class="conteudo">
+                    <div class="cabecalho-cartao">
+                        <span class="tipo-obra tipo-coletanea">Coletânea</span>
+                        <span class="tag">Educação · 2025</span>
+                    </div>
+                    <h3>Pesquisas em Desenvolvimento no Mestrado em Ensino IFMT/UNIC (2025)</h3>
+                    <p class="autores-completo">Marcelo Franco Leão; Ângela Fátima da Rocha (Organizadoras)</p>
+                    <p class="resumo">Coletânea que reúne capítulos de mestrandos e docentes do PPGEn IFMT/UNIC, abordando recortes de pesquisas em desenvolvimento. Os textos exploram temas como produção textual com auxílio de inteligência artificial, letramento digital, tecnologias digitais no ensino, educação ambiental, educação em saúde, formação docente, EJA em unidade prisional, escolas multisseriadas e práticas pedagógicas na Educação Infantil.</p>
+                    <p class="metadados"><strong>ISBN:</strong> 978-65-83547-07-1 · <strong>Páginas:</strong> 282 · <strong>1ª edição, 2025</strong></p>
+                    <div class="cartao-livro-acoes">
+                        <a href="livros/pesquisas_ifmt_unic_2025.pdf" class="botao-livro botao-baixar" download>↓ Acessar PDF</a>
+                        <a href="livros/pesquisas_ifmt_unic_2025.pdf" class="botao-livro botao-detalhes" target="_blank">Visualizar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="cartao-livro-horizontal" id="fundamentos-teoricos-2025" data-tags="coletanea educacao ciencias matematica 2025" data-busca="dos fundamentos teórico-metodológicos prática educativa vivências ensino ciências matemática Marcelo Franco Leão Laura Isabel Marques Vasconcelos de Almeida PPGEn IFMT UNIC aprendizagem significativa etnomatemática etnociências ensino por investigação tecnologias digitais saberes docentes 978-65-83547-06-4 2025 coletânea">
+                <img src="assets/capa_fundamentos_teoricos.jpg" alt="Capa do livro Dos Fundamentos Teórico-Metodológicos à Prática Educativa" class="capa-pequena">
+                <div class="conteudo">
+                    <div class="cabecalho-cartao">
+                        <span class="tipo-obra tipo-coletanea">Coletânea</span>
+                        <span class="tag">Educação · 2025</span>
+                    </div>
+                    <h3>Dos Fundamentos Teórico-Metodológicos à Prática Educativa: Vivências no Ensino de Ciências e Matemática</h3>
+                    <p class="autores-completo">Marcelo Franco Leão; Laura Isabel Marques Vasconcelos de Almeida (Organizadores)</p>
+                    <p class="resumo">Obra resultante das produções da turma de 2025 do PPGEn IFMT/UNIC, que reúne relatos de experiências pedagógicas articulados a fundamentos teórico-metodológicos do ensino de Ciências e Matemática. Os capítulos discutem aprendizagem significativa, teoria dos campos conceituais, ensino por investigação, etnomatemática, etnociências, saberes docentes e usos de tecnologias digitais no contexto educativo.</p>
+                    <p class="metadados"><strong>ISBN:</strong> 978-65-83547-06-4 · <strong>Páginas:</strong> 153 · <strong>1ª edição, 2025</strong></p>
+                    <div class="cartao-livro-acoes">
+                        <a href="livros/fundamentos_teoricos_pratica_educativa_2025.pdf" class="botao-livro botao-baixar" download>↓ Acessar PDF</a>
+                        <a href="livros/fundamentos_teoricos_pratica_educativa_2025.pdf" class="botao-livro botao-detalhes" target="_blank">Visualizar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="cartao-livro-horizontal" id="escrita-cientifica-2025" data-tags="coletanea educacao formacao-professores 2025" data-busca="escrita científica divulgação práticas educativas Marcelo Franco Leão Ana Claudia Tasinaffo Alves Thiago Beirigo Lopes PPGEn IFMT UNIC formação continuada professores educação básica resumos relatos de experiência metodologias ativas 978-65-83547-05-7 2025 coletânea">
+                <img src="assets/capa_escrita_cientifica_2025.jpg" alt="Capa do livro Escrita Científica e Divulgação de Práticas Educativas (2025)" class="capa-pequena">
+                <div class="conteudo">
+                    <div class="cabecalho-cartao">
+                        <span class="tipo-obra tipo-coletanea">Coletânea</span>
+                        <span class="tag">Formação de Professores · 2025</span>
+                    </div>
+                    <h3>Escrita Científica e Divulgação de Práticas Educativas (2025)</h3>
+                    <p class="autores-completo">Marcelo Franco Leão (Organizador)</p>
+                    <p class="resumo">Coletânea com 37 resumos socializados durante o curso de formação continuada "Escrita Científica e Divulgação de Práticas Educativas 2025", ministrado por Marcelo Franco Leão, Ana Claudia Tasinaffo Alves e Thiago Beirigo Lopes no âmbito do PPGEn IFMT/UNIC. Os relatos reúnem práticas pedagógicas desenvolvidas em diferentes níveis de ensino, com ênfase em metodologias ativas, tecnologias digitais e propostas interdisciplinares na Educação Básica.</p>
+                    <p class="metadados"><strong>ISBN:</strong> 978-65-83547-05-7 · <strong>Páginas:</strong> 59 · <strong>1ª edição, 2025</strong></p>
+                    <div class="cartao-livro-acoes">
+                        <a href="livros/escrita_cientifica_praticas_2025.pdf" class="botao-livro botao-baixar" download>↓ Acessar PDF</a>
+                        <a href="livros/escrita_cientifica_praticas_2025.pdf" class="botao-livro botao-detalhes" target="_blank">Visualizar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="cartao-livro-horizontal" id="ii-spem-amazonia-2025" data-tags="anais educacao matematica 2025" data-busca="anais II SPEM Amazônia Seminário de Pesquisa em Educação Matemática temáticas teses dissertações Dailson Evangelista Costa Mônica Suelen Ferreira de Moraes Idemar Vizolli UFT Arraias Tocantins Amazônia Legal Brasileira 978-65-83547-12-5 2025">
+                <img src="assets/capa_ii_spem.jpg" alt="Capa dos Anais do II SPEM-Amazônia 2025" class="capa-pequena">
+                <div class="conteudo">
+                    <div class="cabecalho-cartao">
+                        <span class="tipo-obra tipo-anais">Anais de Evento</span>
+                        <span class="tag">Educação Matemática · 2025</span>
+                    </div>
+                    <h3>Temáticas das Teses e Dissertações em Educação Matemática Desenvolvidas na Amazônia</h3>
+                    <p class="autores-completo">Dailson Evangelista Costa; Mônica Suelen Ferreira de Moraes; Idemar Vizolli (Organizadores)</p>
+                    <p class="resumo">Anais do II Seminário de Pesquisa em Educação Matemática na/da Amazônia (II SPEM-Amazônia), realizado de 19 a 22 de novembro de 2025, em formato híbrido, na Universidade Federal do Tocantins, Câmpus Arraias. A obra reúne palestras, mesas-redondas, comunicações científicas e grupos de trabalho organizados em eixos temáticos, com foco na socialização das produções stricto sensu desenvolvidas em programas de pós-graduação da Amazônia Legal Brasileira.</p>
+                    <p class="metadados"><strong>ISBN:</strong> 978-65-83547-12-5 · <strong>Páginas:</strong> 974 · <strong>2025</strong></p>
+                    <div class="cartao-livro-acoes">
+                        <a href="livros/ii_spem_amazonia_2025.pdf" class="botao-livro botao-baixar" download>↓ Acessar PDF</a>
+                        <a href="livros/ii_spem_amazonia_2025.pdf" class="botao-livro botao-detalhes" target="_blank">Visualizar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="cartao-livro-horizontal" id="vi-semilic-expandidos-2025" data-tags="anais educacao formacao-professores 2025" data-busca="VI Semilic Seminário de Licenciaturas IFMT PID PIBID PRP socialização de experiências resumos expandidos formação de professores Inteligência Artificial Thiago Beirigo Lopes Adriane Barth Douglas Gonçalves Sete Primavera do Leste 978-65-83547-15-6 2025 anais">
+                <img src="assets/capa_semilic_resumos_expandidos.jpg" alt="Capa do Caderno de Resumos Expandidos do VI Semilic" class="capa-pequena">
+                <div class="conteudo">
+                    <div class="cabecalho-cartao">
+                        <span class="tipo-obra tipo-anais">Anais de Evento</span>
+                        <span class="tag">Formação de Professores · 2025</span>
+                    </div>
+                    <h3>Socialização de Experiências no PID, PIBID e PRP: Caderno de Resumos Expandidos do VI Semilic</h3>
+                    <p class="autores-completo">Thiago Beirigo Lopes; Adriane Barth; Douglas Gonçalves Sete (Organizadores)</p>
+                    <p class="resumo">Caderno de resumos expandidos do VI Seminário de Licenciaturas do Instituto Federal de Mato Grosso (VI Semilic), realizado de 15 a 17 de setembro de 2025 no Campus Primavera do Leste, sob o tema "Inteligência Artificial na Formação de Professores/as". A obra reúne produções vinculadas aos programas PID, PIBID e PRP, com relatos detalhados de práticas pedagógicas, intervenções didáticas e reflexões sobre a articulação entre ensino, pesquisa e extensão na formação inicial docente.</p>
+                    <p class="metadados"><strong>ISBN:</strong> 978-65-83547-15-6 · <strong>Páginas:</strong> 264 · <strong>2025</strong></p>
+                    <div class="cartao-livro-acoes">
+                        <a href="livros/vi_semilic_resumos_expandidos_2025.pdf" class="botao-livro botao-baixar" download>↓ Acessar PDF</a>
+                        <a href="livros/vi_semilic_resumos_expandidos_2025.pdf" class="botao-livro botao-detalhes" target="_blank">Visualizar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="cartao-livro-horizontal" id="vi-semilic-simples-2025" data-tags="anais educacao formacao-professores 2025" data-busca="VI Semilic Seminário de Licenciaturas IFMT PID PIBID PRP relatos e experiências resumos simples formação de professores Inteligência Artificial Thiago Beirigo Lopes Adriane Barth Douglas Gonçalves Sete Primavera do Leste 978-65-83547-14-9 2025 anais">
+                <img src="assets/capa_semilic_resumos_simples.jpg" alt="Capa do Caderno de Resumos Simples do VI Semilic" class="capa-pequena">
+                <div class="conteudo">
+                    <div class="cabecalho-cartao">
+                        <span class="tipo-obra tipo-anais">Anais de Evento</span>
+                        <span class="tag">Formação de Professores · 2025</span>
+                    </div>
+                    <h3>Relatos e Experiências no Âmbito do PID, PIBID e PRP: Caderno de Resumos Simples do VI Semilic</h3>
+                    <p class="autores-completo">Thiago Beirigo Lopes; Adriane Barth; Douglas Gonçalves Sete (Organizadores)</p>
+                    <p class="resumo">Caderno de resumos simples do VI Seminário de Licenciaturas do Instituto Federal de Mato Grosso (VI Semilic), realizado de 15 a 17 de setembro de 2025 no Campus Primavera do Leste. A obra socializa experiências formativas de licenciandos, supervisores e coordenadores vinculados ao Programa Institucional de Incentivo à Docência (PID), ao PIBID e ao Programa de Residência Pedagógica (PRP), com ênfase em metodologias ativas, tecnologias digitais e abordagens inclusivas no ensino.</p>
+                    <p class="metadados"><strong>ISBN:</strong> 978-65-83547-14-9 · <strong>Páginas:</strong> 87 · <strong>2025</strong></p>
+                    <div class="cartao-livro-acoes">
+                        <a href="livros/vi_semilic_resumos_simples_2025.pdf" class="botao-livro botao-baixar" download>↓ Acessar PDF</a>
+                        <a href="livros/vi_semilic_resumos_simples_2025.pdf" class="botao-livro botao-detalhes" target="_blank">Visualizar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="cartao-livro-horizontal" id="entre-praticas-reflexoes-2025" data-tags="coletanea educacao linguagens 2025" data-busca="entre práticas e reflexões relatos de experiência ensino de linguagens códigos suas tecnologias Ana Graciela Mendes Fernandes da Fonseca Voltolini Claudia Lúcia Landgraf Valério Epaminondas de Matos Magalhães Marcos Aparecido Pereira Rosemar Eurico Coenga PPGEn IFMT UNIC língua portuguesa literatura inglesa leitura literária escrita criativa letramento antirracista inteligência artificial Amazon Alexa educação do campo 978-65-83547-04-0 2025 coletânea">
+                <img src="assets/capa_entre_praticas_reflexoes.jpg" alt="Capa do livro Entre Práticas e Reflexões: Relatos de Experiência no Ensino de Linguagens, Códigos e suas Tecnologias" class="capa-pequena">
+                <div class="conteudo">
+                    <div class="cabecalho-cartao">
+                        <span class="tipo-obra tipo-coletanea">Coletânea</span>
+                        <span class="tag">Linguagens · 2025</span>
+                    </div>
+                    <h3>Entre Práticas e Reflexões: Relatos de Experiência no Ensino de Linguagens, Códigos e suas Tecnologias</h3>
+                    <p class="autores-completo">Ana Graciela Mendes Fernandes da Fonseca Voltolini; Claudia Lúcia Landgraf Valério; Epaminondas de Matos Magalhães; Marcos Aparecido Pereira; Rosemar Eurico Coenga (Organizadores)</p>
+                    <p class="resumo">Coletânea de oito capítulos elaborados por egressos e docentes vinculados à Linha de Pesquisa 1, Linguagens, Códigos e suas Tecnologias, do PPGEn/IFMT/UNIC. Os textos abordam metodologias e experiências didáticas no ensino de língua portuguesa, literatura e língua inglesa, contemplando leitura literária, escrita criativa, letramento antirracista, narrativas negras na infância e uso de inteligência artificial em sala de aula. Obra publicada com recursos do PROAP 2023-2024.</p>
+                    <p class="metadados"><strong>ISBN:</strong> 978-65-83547-04-0 · <strong>Páginas:</strong> 123 · <strong>1ª edição, 2025</strong></p>
+                    <div class="cartao-livro-acoes">
+                        <a href="livros/entre_praticas_reflexoes_2025.pdf" class="botao-livro botao-baixar" download>↓ Acessar PDF</a>
+                        <a href="livros/entre_praticas_reflexoes_2025.pdf" class="botao-livro botao-detalhes" target="_blank">Visualizar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="cartao-livro-horizontal" id="tecnologias-digitais-2024" data-tags="coletanea educacao ciencias 2024" data-busca="tecnologias digitais experiências utilização ensino aprendizagem Sérgio Gomes da Silva PPGEn IFMT TDIC letramento digital formação de professores ensino híbrido educação ambiental geografia mudanças climáticas 978-65-983317-3-3 2024 coletânea">
+                <img src="assets/capa_tecnologias_digitais_2024.jpg" alt="Capa do livro Tecnologias Digitais: Experiências de sua Utilização no Ensino" class="capa-pequena">
+                <div class="conteudo">
+                    <div class="cabecalho-cartao">
+                        <span class="tipo-obra tipo-coletanea">Coletânea</span>
+                        <span class="tag">Educação · 2024</span>
+                    </div>
+                    <h3>Tecnologias Digitais: Experiências de sua Utilização no Ensino como Meio para Facilitar a Aprendizagem</h3>
+                    <p class="autores-completo">Sérgio Gomes da Silva (Organizador)</p>
+                    <p class="resumo">Coletânea desenvolvida no âmbito do PPGEn/IFMT que reúne capítulos sobre o uso das Tecnologias Digitais da Informação e Comunicação (TDIC) no contexto escolar. A obra integra o projeto institucional "TDIC aplicadas ao ensino em Mato Grosso" e contempla temas como letramento digital, formação de professores, ensino híbrido, educação ambiental, geografia escolar, mudanças climáticas e práticas pedagógicas pós-pandemia da COVID-19.</p>
+                    <p class="metadados"><strong>ISBN:</strong> 978-65-983317-3-3 · <strong>Páginas:</strong> 148 · <strong>1ª edição, 2024</strong></p>
+                    <div class="cartao-livro-acoes">
+                        <a href="livros/tecnologias_digitais_2024.pdf" class="botao-livro botao-baixar" download>↓ Acessar PDF</a>
+                        <a href="livros/tecnologias_digitais_2024.pdf" class="botao-livro botao-detalhes" target="_blank">Visualizar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="cartao-livro-horizontal" id="pesquisas-ppgen-2024" data-tags="coletanea educacao ciencias matematica 2024" data-busca="pesquisas em desenvolvimento mestrado em ensino IFMT UNIC PPGEn 2024 Marcelo Franco Leão Geison Jader Mello evasão matemática educação ambiental biomatemática pensamento científico educação infantil cultura maker robótica equilíbrio químico ensino fundamental PROAP 978-65-983317-7-1 coletânea">
+                <img src="assets/capa_pesquisas_ppgen_2024.jpg" alt="Capa do livro Pesquisas em Desenvolvimento no Mestrado em Ensino IFMT/UNIC (2024)" class="capa-pequena">
+                <div class="conteudo">
+                    <div class="cabecalho-cartao">
+                        <span class="tipo-obra tipo-coletanea">Coletânea</span>
+                        <span class="tag">Educação · 2024</span>
+                    </div>
+                    <h3>Pesquisas em Desenvolvimento no Mestrado em Ensino IFMT/UNIC (2024)</h3>
+                    <p class="autores-completo">Marcelo Franco Leão; Geison Jader Mello (Organizadores)</p>
+                    <p class="resumo">Coletânea com textos elaborados por mestrandos do PPGEn/IFMT/UNIC em coautoria com seus orientadores, apresentando pesquisas em andamento desenvolvidas ao longo de 2024. Os capítulos contemplam temáticas como evasão em cursos de Matemática, educação ambiental, biomatemática, pensamento científico na Educação Infantil, cultura maker, programação em blocos, robótica educacional, equilíbrio químico e ensino de números decimais. Obra custeada com recursos do PROAP 2023-2024.</p>
+                    <p class="metadados"><strong>ISBN:</strong> 978-65-983317-7-1 · <strong>Páginas:</strong> 148 · <strong>1ª edição, 2024</strong></p>
+                    <div class="cartao-livro-acoes">
+                        <a href="livros/pesquisas_ppgen_ifmt_unic_2024.pdf" class="botao-livro botao-baixar" download>↓ Acessar PDF</a>
+                        <a href="livros/pesquisas_ppgen_ifmt_unic_2024.pdf" class="botao-livro botao-detalhes" target="_blank">Visualizar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="cartao-livro-horizontal" id="retratos-culturas-escolares-2024" data-tags="coletanea educacao formacao-professores 2024" data-busca="retratos de algumas culturas escolares Marcelo Franco Leão Thiago Beirigo Lopes Laura Isabel Marques Vasconcelos de Almeida PPGEn IFMT UNIC análise pictórica cultura escolar saberes docentes formação de professores metodologias ativas educação infantil ensino fundamental estágio supervisionado pandemia 978-65-83547-01-9 coletânea">
+                <img src="assets/capa_retratos_culturas_escolares.jpg" alt="Capa do livro Retratos de algumas culturas escolares" class="capa-pequena">
+                <div class="conteudo">
+                    <div class="cabecalho-cartao">
+                        <span class="tipo-obra tipo-coletanea">Coletânea</span>
+                        <span class="tag">Educação · 2024</span>
+                    </div>
+                    <h3>Retratos de algumas culturas escolares</h3>
+                    <p class="autores-completo">Marcelo Franco Leão; Thiago Beirigo Lopes; Laura Isabel Marques Vasconcelos de Almeida (Organizadores)</p>
+                    <p class="resumo">Coletânea com dezoito capítulos que mobiliza a análise pictórica como recurso metodológico para investigar saberes docentes e culturas escolares. Os textos, de mestrandos do PPGEn/IFMT/UNIC em coautoria com seus orientadores, percorrem cenas da Educação Infantil ao Ensino Superior, contemplando o jogo das emoções, a educação em saúde bucal, práticas pandêmicas, fragmentos do cotidiano escolar, estágio supervisionado, formatura e o ensino de Matemática.</p>
+                    <p class="metadados"><strong>ISBN:</strong> 978-65-83547-01-9 · <strong>Páginas:</strong> 189 · <strong>1ª edição, 2024</strong></p>
+                    <div class="cartao-livro-acoes">
+                        <a href="livros/retratos_culturas_escolares_2024.pdf" class="botao-livro botao-baixar" download>↓ Acessar PDF</a>
+                        <a href="livros/retratos_culturas_escolares_2024.pdf" class="botao-livro botao-detalhes" target="_blank">Visualizar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="cartao-livro-horizontal" id="ii-mostra-praticas-2024" data-tags="anais educacao 2024" data-busca="anais II Mostra Científica Práticas Pedagógicas Escola Estadual 21 de Abril ETI Juína Raquel Neves Pereira de Queiróz Chaeny Silva Souza Rocir Pereira Celestino Castilho Renan Helder dos Santos Silva Samara Uchôa Feitoza Wagner educação básica relatos de experiência metodologias ativas 978-65-83547-03-3 2024 evento">
+                <img src="assets/capa_ii_mostra_praticas.jpg" alt="Capa dos Anais da II Mostra Científica de Práticas Pedagógicas" class="capa-pequena">
+                <div class="conteudo">
+                    <div class="cabecalho-cartao">
+                        <span class="tipo-obra tipo-anais">Anais de Evento</span>
+                        <span class="tag">Educação · 2024</span>
+                    </div>
+                    <h3>Anais da II Mostra Científica de Práticas Pedagógicas</h3>
+                    <p class="autores-completo">Raquel Neves Pereira de Queiróz; Chaeny Silva Souza; Rocir Pereira Celestino Castilho; Renan Helder dos Santos Silva; Samara Uchôa Feitoza Wagner (Organizadores)</p>
+                    <p class="resumo">Anais da II Mostra Científica de Práticas Pedagógicas, realizada em 22 de novembro de 2024 pela Escola Estadual 21 de Abril, Escola de Tempo Integral, no município de Juína-MT. A obra reúne relatos de experiência produzidos por professores e estudantes, com trabalhos distribuídos nas áreas de Linguagens, Ciências Humanas e Ciências da Natureza, contemplando temas como cultura maker, gamificação, inteligência artificial na educação, sustentabilidade, libras, jogos pedagógicos e práticas interdisciplinares na Educação Básica.</p>
+                    <p class="metadados"><strong>ISBN:</strong> 978-65-83547-03-3 · <strong>Páginas:</strong> 185 · <strong>2025 (evento de 2024)</strong></p>
+                    <div class="cartao-livro-acoes">
+                        <a href="livros/ii_mostra_praticas_pedagogicas_2024.pdf" class="botao-livro botao-baixar" download>↓ Acessar PDF</a>
+                        <a href="livros/ii_mostra_praticas_pedagogicas_2024.pdf" class="botao-livro botao-detalhes" target="_blank">Visualizar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="cartao-livro-horizontal" id="ensino-sociedade-diversidades-2024" data-tags="coletanea educacao formacao-professores 2024" data-busca="ensino sociedade diversidades reflexões necessárias formação docente Maria Auxiliadora de Almeida Arruda Marcelo Franco Leão Edione Teixeira de Carvalho Ronaldo Eustáquio Feitosa Senra PPGEn IFMT UNIC ações afirmativas decolonialidade Paulo Freire Frantz Fanon Krenak racismo ambiental Lei 10.639 literatura negra educação antirracista 978-65-83547-00-2 2024 coletânea">
+                <img src="assets/capa_ensino_sociedade_diversidades.jpg" alt="Capa do livro Ensino, Sociedade e Diversidades" class="capa-pequena">
+                <div class="conteudo">
+                    <div class="cabecalho-cartao">
+                        <span class="tipo-obra tipo-coletanea">Coletânea</span>
+                        <span class="tag">Formação de Professores · 2024</span>
+                    </div>
+                    <h3>Ensino, Sociedade e Diversidades: Reflexões Necessárias na Formação Docente</h3>
+                    <p class="autores-completo">Maria Auxiliadora de Almeida Arruda; Marcelo Franco Leão; Edione Teixeira de Carvalho; Ronaldo Eustáquio Feitosa Senra (Organizadores)</p>
+                    <p class="resumo">Coletânea com dez artigos vinculados ao projeto PDPG-Alteridade na Pós-Graduação (Edital Capes nº 37/2022), desenvolvido no PPGEn IFMT/UNIC. Cinco capítulos resultam de estudos teóricos decoloniais produzidos na disciplina "Ensino, Sociedade e Diversidades" (2024/2); os demais discutem ações afirmativas, implicações da Lei 10.639/2003, literatura negra brasileira, racismo ambiental e práticas pedagógicas voltadas ao reconhecimento da diversidade na formação docente.</p>
+                    <p class="metadados"><strong>ISBN:</strong> 978-65-83547-00-2 · <strong>Páginas:</strong> 144 · <strong>1ª edição, 2024</strong></p>
+                    <div class="cartao-livro-acoes">
+                        <a href="livros/ensino_sociedade_diversidades_2024.pdf" class="botao-livro botao-baixar" download>↓ Acessar PDF</a>
+                        <a href="livros/ensino_sociedade_diversidades_2024.pdf" class="botao-livro botao-detalhes" target="_blank">Visualizar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="cartao-livro-horizontal" id="escrita-cientifica-2024" data-tags="coletanea educacao formacao-professores 2024" data-busca="escrita científica divulgação práticas educativas 2024 Marcelo Franco Leão PPGEn IFMT UNIC PROAP formação continuada professores educação básica relatos de experiência metodologias ativas jogos didáticos gamificação ensino ciências matemática 978-65-983317-6-4 2024 coletânea">
+                <img src="assets/capa_escrita_cientifica_2024.jpg" alt="Capa do livro Escrita Científica e Divulgação de Práticas Educativas (2024)" class="capa-pequena">
+                <div class="conteudo">
+                    <div class="cabecalho-cartao">
+                        <span class="tipo-obra tipo-coletanea">Coletânea</span>
+                        <span class="tag">Formação de Professores · 2024</span>
+                    </div>
+                    <h3>Escrita Científica e Divulgação de Práticas Educativas (2024)</h3>
+                    <p class="autores-completo">Marcelo Franco Leão (Organizador)</p>
+                    <p class="resumo">Edição de 2024 do projeto de formação continuada do PPGEn IFMT/UNIC, custeada pela PROAP 2023. A obra reúne resumos simples de práticas pedagógicas desenvolvidas por professores da Educação Básica e mestrandos, contemplando temas como cultura maker, gamificação, jogos didáticos, avaliação progressista, inclusão, educação ambiental, educação prisional, ensino de matemática, ciências e linguagens em diferentes contextos escolares.</p>
+                    <p class="metadados"><strong>ISBN:</strong> 978-65-983317-6-4 · <strong>Páginas:</strong> 47 · <strong>1ª edição, 2024</strong></p>
+                    <div class="cartao-livro-acoes">
+                        <a href="livros/escrita_cientifica_praticas_2024.pdf" class="botao-livro botao-baixar" download>↓ Acessar PDF</a>
+                        <a href="livros/escrita_cientifica_praticas_2024.pdf" class="botao-livro botao-detalhes" target="_blank">Visualizar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="cartao-livro-horizontal" id="iii-etem-2024" data-tags="anais educacao matematica 2024" data-busca="anais III ETEM Encontro Tocantinense de Educação Matemática formação trabalho professor pesquisador Idemar Vizolli Dailson Evangelista Costa Mônica Suelen Ferreira de Moraes UFT Arraias Tocantins 978-65-983317-9-5 2024">
+                <img src="assets/capa_iii_etem.jpg" alt="Capa dos Anais do III ETEM 2024" class="capa-pequena">
+                <div class="conteudo">
+                    <div class="cabecalho-cartao">
+                        <span class="tipo-obra tipo-anais">Anais de Evento</span>
+                        <span class="tag">Educação Matemática · 2024</span>
+                    </div>
+                    <h3>A Formação e o Trabalho do Professor-Pesquisador em Educação Matemática</h3>
+                    <p class="autores-completo">Idemar Vizolli; Dailson Evangelista Costa; Mônica Suelen Ferreira de Moraes (Organizadores)</p>
+                    <p class="resumo">Anais do III Encontro Tocantinense de Educação Matemática (III ETEM), realizado de 12 a 16 de novembro de 2024, em modalidade semipresencial, na Universidade Federal do Tocantins, Câmpus de Arraias. A obra agrega palestras, minicursos, oficinas, pôsteres, comunicações científicas e relatos de experiência distribuídos em dezessete eixos temáticos, abrangendo desde a Educação Infantil até a Matemática Pura e Aplicada.</p>
+                    <p class="metadados"><strong>ISBN:</strong> 978-65-983317-9-5 · <strong>Páginas:</strong> 1059 · <strong>2024</strong></p>
+                    <div class="cartao-livro-acoes">
+                        <a href="livros/iii_etem_2024.pdf" class="botao-livro botao-baixar" download>↓ Acessar PDF</a>
+                        <a href="livros/iii_etem_2024.pdf" class="botao-livro botao-detalhes" target="_blank">Visualizar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="cartao-livro-horizontal" id="i-spem-amazonia-2024" data-tags="anais educacao matematica 2024" data-busca="anais I SPEM Amazônia Seminário de Pesquisa em Educação Matemática três décadas pesquisas stricto sensu Idemar Vizolli Dailson Evangelista Costa Mônica Suelen Ferreira de Moraes UFT Arraias Tocantins Amazônia Legal Brasileira 978-65-983317-8-8 2024">
+                <img src="assets/capa_spem_amazonia.jpg" alt="Capa dos Anais do I SPEM-Amazônia 2024" class="capa-pequena">
+                <div class="conteudo">
+                    <div class="cabecalho-cartao">
+                        <span class="tipo-obra tipo-anais">Anais de Evento</span>
+                        <span class="tag">Educação Matemática · 2024</span>
+                    </div>
+                    <h3>Três Décadas de Pesquisas Stricto Sensu em Educação Matemática na Amazônia</h3>
+                    <p class="autores-completo">Idemar Vizolli; Dailson Evangelista Costa; Mônica Suelen Ferreira de Moraes (Organizadores)</p>
+                    <p class="resumo">Anais do I Seminário de Pesquisa em Educação Matemática na/da Amazônia (I SPEM-Amazônia), realizado de 11 a 14 de novembro de 2024, em modalidade semipresencial, na Universidade Federal do Tocantins, Câmpus Professor Sérgio Jacintho Leonor, em Arraias. A obra reúne palestras, mesas-redondas, comunicações científicas, relatos de experiência e pôsteres organizados em dezessete eixos temáticos, com reflexões sobre o percurso histórico e os avanços das pesquisas em Educação Matemática na Amazônia Legal Brasileira.</p>
+                    <p class="metadados"><strong>ISBN:</strong> 978-65-983317-8-8 · <strong>Páginas:</strong> 649 · <strong>2024</strong></p>
+                    <div class="cartao-livro-acoes">
+                        <a href="livros/i_spem_amazonia_2024.pdf" class="botao-livro botao-baixar" download>↓ Acessar PDF</a>
+                        <a href="livros/i_spem_amazonia_2024.pdf" class="botao-livro botao-detalhes" target="_blank">Visualizar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="cartao-livro-horizontal" id="integracao" data-tags="coletanea educacao ciencias matematica 2024" data-busca="integração saberes enfoque CTSA sequências didáticas ensino ciências natureza matemática Ana Claudia Tasinaffo Alves Leandro Carbo CTSA PPGEn IFMT UNIC educação ambiental alimentar impressões 3D 978-65-83547-02-6 coletânea">
+                <img src="assets/capa_integracao.jpg" alt="Capa do e-book Integração de Saberes e Enfoque CTSA" class="capa-pequena">
+                <div class="conteudo">
+                    <div class="cabecalho-cartao">
+                        <span class="tipo-obra tipo-coletanea">Coletânea</span>
+                        <span class="tag">Educação · 2024</span>
+                    </div>
+                    <h3>Integração de Saberes e Enfoque CTSA: Sequências Didáticas para o Ensino de Ciências da Natureza e Matemática</h3>
+                    <p class="autores-completo">Ana Claudia Tasinaffo Alves; Leandro Carbo (Organizadores)</p>
+                    <p class="resumo">Coletânea de dez artigos com propostas de sequências didáticas para o ensino de Ciências da Natureza e Matemática, fundamentadas na abordagem CTSA. Reúne trabalhos elaborados no âmbito do Mestrado em Ensino do PPGEn/IFMT em associação com a UNIC, contemplando temas como Educação Ambiental, Educação Alimentar, Impressões 3D, entre outros.</p>
+                    <p class="metadados"><strong>ISBN:</strong> 978-65-83547-02-6 · <strong>Páginas:</strong> 154 · <strong>1ª edição, 2024</strong></p>
+                    <div class="cartao-livro-acoes">
+                        <a href="livros/integracao_saberes_ctsa.pdf" class="botao-livro botao-baixar" download>↓ Acessar PDF</a>
+                        <a href="livros/integracao_saberes_ctsa.pdf" class="botao-livro botao-detalhes" target="_blank">Visualizar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="cartao-livro-horizontal" id="conexoes" data-tags="coletanea educacao ciencias matematica 2024" data-busca="conexões CTSA propostas sequências didáticas ensino ciências matemática Ana Claudia Tasinaffo Alves Leandro Carbo PPGEn IFMT UNIC 978-65-997449-8-3 coletânea">
+                <img src="assets/capa_conexoes.jpg" alt="Capa do e-book Conexões CTSA" class="capa-pequena">
+                <div class="conteudo">
+                    <div class="cabecalho-cartao">
+                        <span class="tipo-obra tipo-coletanea">Coletânea</span>
+                        <span class="tag">Educação · 2024</span>
+                    </div>
+                    <h3>Conexões CTSA: Propostas de Sequências Didáticas para o Ensino de Ciências e Matemática</h3>
+                    <p class="autores-completo">Ana Claudia Tasinaffo Alves; Leandro Carbo (Organizadores)</p>
+                    <p class="resumo">Compilação de oito artigos que apresentam propostas de sequências didáticas para o ensino de Ciências e Matemática, fundamentadas na perspectiva Ciência, Tecnologia, Sociedade e Ambiente. Obra desenvolvida no contexto do PPGEn/IFMT em associação com a UNIC.</p>
+                    <p class="metadados"><strong>ISBN:</strong> 978-65-997449-8-3 · <strong>Páginas:</strong> 125 · <strong>2024</strong></p>
+                    <div class="cartao-livro-acoes">
+                        <a href="livros/conexoes_ctsa.pdf" class="botao-livro botao-baixar" download>↓ Acessar PDF</a>
+                        <a href="livros/conexoes_ctsa.pdf" class="botao-livro botao-detalhes" target="_blank">Visualizar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="cartao-livro-horizontal" id="alguns-retratos-cultura-escolar-2024" data-tags="coletanea educacao formacao-professores 2024" data-busca="alguns retratos da cultura escolar Marcelo Franco Leão Laura Isabel Marques Vasconcelos de Almeida Thiago Beirigo Lopes PPGEn IFMT UNIC culturas escolares formação docente análise pictórica registro iconográfico saberes escolares ensino de Ciências da Natureza Matemática Wagner Rodrigues Valente prefácio Chervel Julia disciplinas escolares estágio supervisionado educação infantil 978-65-983317-2-6 coletânea">
+                <img src="assets/capa_alguns_retratos_cultura_escolar.jpg" alt="Capa do livro Alguns retratos da cultura escolar" class="capa-pequena">
+                <div class="conteudo">
+                    <div class="cabecalho-cartao">
+                        <span class="tipo-obra tipo-coletanea">Coletânea</span>
+                        <span class="tag">Educação · 2024</span>
+                    </div>
+                    <h3>Alguns retratos da cultura escolar</h3>
+                    <p class="autores-completo">Marcelo Franco Leão; Laura Isabel Marques Vasconcelos de Almeida; Thiago Beirigo Lopes (Organizadores)</p>
+                    <p class="resumo">Coletânea com onze capítulos produzidos no âmbito da disciplina Culturas Escolares e Formação Docente do PPGEn/IFMT/UNIC, em parcerias entre orientandos e orientadores. Os textos exploram registros iconográficos, análise pictórica e relatos de experiência para discutir a cultura escolar em diferentes contextos, contemplando o ensino de Ciências da Natureza e da Matemática, o lúdico, o estágio supervisionado, a Educação Infantil e questões sociais como o trabalho escravo. A obra conta com prefácio de Wagner Rodrigues Valente.</p>
+                    <p class="metadados"><strong>ISBN:</strong> 978-65-983317-2-6 · <strong>Páginas:</strong> 110 · <strong>1ª edição, 2024</strong></p>
+                    <div class="cartao-livro-acoes">
+                        <a href="livros/alguns_retratos_cultura_escolar_2024.pdf" class="botao-livro botao-baixar" download>↓ Acessar PDF</a>
+                        <a href="livros/alguns_retratos_cultura_escolar_2024.pdf" class="botao-livro botao-detalhes" target="_blank">Visualizar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="cartao-livro-horizontal" id="quadro-negro-digital-2023" data-tags="coletanea educacao formacao-professores 2023" data-busca="do quadro negro ao digital experiências e aspirações de docentes mestrandos em ensino PPGEn IFMT UNIC Thiago Beirigo Lopes Laura Isabel Marques Vasconcelos de Almeida narrativas autobiográficas trajetórias docentes formação de professores tecnologia educacional CAPES Amazônia Legal Edital 13/2020 978-65-997449-5-2 coletânea">
+                <img src="assets/capa_quadro_negro_digital.jpg" alt="Capa do livro Do Quadro Negro ao Digital: Experiências e Aspirações de Docentes Mestrandos em Ensino" class="capa-pequena">
+                <div class="conteudo">
+                    <div class="cabecalho-cartao">
+                        <span class="tipo-obra tipo-coletanea">Coletânea</span>
+                        <span class="tag">Formação de Professores · 2023</span>
+                    </div>
+                    <h3>Do Quadro Negro ao Digital: Experiências e Aspirações de Docentes Mestrandos em Ensino (PPGEn/IFMT–UNIC)</h3>
+                    <p class="autores-completo">Thiago Beirigo Lopes; Laura Isabel Marques Vasconcelos de Almeida (Organizadores)</p>
+                    <p class="resumo">Coletânea com treze capítulos que reúne narrativas (auto)biográficas de mestrandos do PPGEn/IFMT/UNIC sobre suas trajetórias de formação e prática docente. Os textos discutem identidade profissional, mudanças na educação, desafios da docência e o percurso entre o quadro negro tradicional e as tecnologias digitais. Obra financiada com recursos do Edital nº 13/2020 CAPES, Amazônia Legal.</p>
+                    <p class="metadados"><strong>ISBN:</strong> 978-65-997449-5-2 · <strong>Páginas:</strong> 198 · <strong>1ª edição, 2023</strong></p>
+                    <div class="cartao-livro-acoes">
+                        <a href="livros/quadro_negro_ao_digital_2023.pdf" class="botao-livro botao-baixar" download>↓ Acessar PDF</a>
+                        <a href="livros/quadro_negro_ao_digital_2023.pdf" class="botao-livro botao-detalhes" target="_blank">Visualizar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="cartao-livro-horizontal" id="diferentes-aspectos-ppgen-2023" data-tags="coletanea educacao ciencias matematica linguagens 2023" data-busca="diferentes aspectos sobre o ensino algumas investigações desenvolvidas no PPGEn Marcelo Franco Leão PPGEn IFMT UNIC PROAP CAPES letramento matemático ENEM cinética química PNLD escrita criativa formação de professores alfabetização interpretação ambiental COVID-19 BNCC DRC/MT conhecimento docente Confresa Editora Gnosis Carajás 978-65-997449-6-9 coletânea">
+                <img src="assets/capa_diferentes_aspectos_ppgen.jpg" alt="Capa do livro Diferentes aspectos sobre o Ensino: Algumas investigações desenvolvidas no PPGEn" class="capa-pequena">
+                <div class="conteudo">
+                    <div class="cabecalho-cartao">
+                        <span class="tipo-obra tipo-coletanea">Coletânea</span>
+                        <span class="tag">Educação · 2023</span>
+                    </div>
+                    <h3>Diferentes aspectos sobre o Ensino: Algumas investigações desenvolvidas no PPGEn</h3>
+                    <p class="autores-completo">Marcelo Franco Leão (Organizador)</p>
+                    <p class="resumo">Coletânea com sete capítulos elaborados por egressos e docentes do PPGEn/IFMT/UNIC, com pesquisas que refletem o espírito de integração disciplinar do Programa. Os textos abordam letramento matemático em trabalhos apresentados no ENEM, cinética química em livros didáticos do PNLD 2018-2020, escrita criativa, formação de professoras alfabetizadoras, origem da interpretação ambiental no Brasil, palestra sobre teste rápido da COVID-19 articulada à BNCC e ao DRC/MT, além do conhecimento docente em Matemática. Obra custeada com recursos do PROAP/CAPES.</p>
+                    <p class="metadados"><strong>ISBN:</strong> 978-65-997449-6-9 · <strong>Páginas:</strong> 120 · <strong>1ª edição, 2023</strong></p>
+                    <div class="cartao-livro-acoes">
+                        <a href="livros/diferentes_aspectos_ensino_ppgen_2023.pdf" class="botao-livro botao-baixar" download>↓ Acessar PDF</a>
+                        <a href="livros/diferentes_aspectos_ensino_ppgen_2023.pdf" class="botao-livro botao-detalhes" target="_blank">Visualizar</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="cartao-livro-horizontal" id="v-jenpex-2022" data-tags="anais educacao formacao-professores 2022" data-busca="anais V Jornada de Ensino Pesquisa e Extensão JENPEX I Seminário de Educação Antirracista SEAn IFMT Campus Confresa Célia Ferreira de Sousa educação inclusão social diversidade território Araguaia Xingu ciências da natureza educação antirracista 2022 anais">
+                <img src="assets/capa_v_jenpex_2022.jpg" alt="Capa dos Anais da V JENPEX e I SEAn do IFMT Campus Confresa" class="capa-pequena">
+                <div class="conteudo">
+                    <div class="cabecalho-cartao">
+                        <span class="tipo-obra tipo-anais">Anais de Evento</span>
+                        <span class="tag">Educação · 2022</span>
+                    </div>
+                    <h3>Anais da V Jornada de Ensino, Pesquisa e Extensão (JENPEX) e do I Seminário de Educação Antirracista (SEAn) do IFMT Campus Confresa</h3>
+                    <p class="autores-completo">Célia Ferreira de Sousa (Organizadora)</p>
+                    <p class="resumo">Anais da V JENPEX e do I SEAn do IFMT Campus Confresa, realizados de 10 a 12 de novembro de 2022 em formato presencial. A obra reúne resumos simples apresentados em comunicação oral, mostra didática e científica e minicursos, organizados em torno dos eixos temáticos "Educação, Inclusão Social e Diversidade no Território Araguaia Xingu" e "Educação Antirracista", com trabalhos distribuídos em grupos de Ciências da Natureza, Educação e demais áreas de ensino, pesquisa e extensão.</p>
+                    <p class="metadados"><strong>Páginas:</strong> 119 · <strong>2022</strong></p>
+                    <div class="cartao-livro-acoes">
+                        <a href="livros/anais_v_jenpex_2022.pdf" class="botao-livro botao-baixar" download>↓ Acessar PDF</a>
+                        <a href="livros/anais_v_jenpex_2022.pdf" class="botao-livro botao-detalhes" target="_blank">Visualizar</a>
+                    </div>
+                </div>
+            </article>
+
+            </div>
+
+            <div id="sem-resultados" class="sem-resultados" style="display: none;">
+                <p style="font-size: 1.1rem; color: var(--cinza-texto);">Nenhuma obra encontrada com os critérios informados.</p>
+                <button class="botao-livro botao-detalhes" onclick="limparBusca()" style="margin-top: 1rem;">Limpar filtros</button>
+            </div>
+
+            <div style="background: var(--cinza-claro); padding: 2rem; border-radius: var(--raio); margin-top: 2rem; text-align: center;">
+                <h3 style="margin-bottom: 0.6rem;">Indexação em bases acadêmicas</h3>
+                <p style="color: var(--cinza-texto);">As obras da Editora Gnosis Carajás também podem ser localizadas em repositórios como o Google Acadêmico, ampliando a visibilidade e o alcance das publicações.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="rodape">
+        <div class="rodape-interno">
+            <div>
+                <h4>Editora Gnosis Carajás</h4>
+                <p>Publicações acadêmicas com foco em Educação, Ensino de Ciências e Matemática.</p>
+                <p style="margin-top: 1rem;">Confresa, Mato Grosso, Brasil.</p>
+            </div>
+            <div>
+                <h4>Navegação</h4>
+                <ul>
+                    <li><a href="index.html">Início</a></li>
+                    <li><a href="sobre.html">Sobre a editora</a></li>
+                    <li><a href="catalogo.html">Catálogo</a></li>
+                    <li><a href="normas.html">Normas para autores</a></li>
+                    <li><a href="contato.html">Contato</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>Contato</h4>
+                <ul>
+                    <li>editora@gnosiscarajas.com.br</li>
+                    <li>www.gnosiscarajas.com.br</li>
+                </ul>
+            </div>
+        </div>
+        <div class="rodape-base">
+            © 2025 Editora Gnosis Carajás. Todos os direitos reservados.
+        </div>
+    </footer>
+
+    <script>
+        let filtroTagAtual = 'todos';
+
+        function filtrarCatalogo() {
+            const termo = document.getElementById('campo-busca').value.toLowerCase().trim();
+            const livros = document.querySelectorAll('.cartao-livro-horizontal');
+            const botaoLimpar = document.getElementById('botao-limpar');
+            const resultado = document.getElementById('busca-resultado');
+            const semResultados = document.getElementById('sem-resultados');
+
+            botaoLimpar.style.display = termo ? 'block' : 'none';
+
+            let visiveis = 0;
+            livros.forEach(livro => {
+                const textoBusca = livro.dataset.busca.toLowerCase();
+                const tags = livro.dataset.tags.toLowerCase();
+                const correspondeTermo = termo === '' || textoBusca.includes(termo);
+                const correspondeTag = filtroTagAtual === 'todos' || tags.includes(filtroTagAtual);
+                if (correspondeTermo && correspondeTag) {
+                    livro.style.display = 'grid';
+                    visiveis++;
+                } else {
+                    livro.style.display = 'none';
+                }
+            });
+
+            if (termo || filtroTagAtual !== 'todos') {
+                resultado.style.display = 'block';
+                resultado.textContent = visiveis === 1
+                    ? '1 obra encontrada.'
+                    : visiveis + ' obras encontradas.';
+            } else {
+                resultado.style.display = 'none';
+            }
+
+            semResultados.style.display = visiveis === 0 ? 'block' : 'none';
+        }
+
+        function filtrarPorTag(botao) {
+            document.querySelectorAll('.filtro-tag').forEach(b => b.classList.remove('ativo'));
+            botao.classList.add('ativo');
+            filtroTagAtual = botao.dataset.filtro;
+            filtrarCatalogo();
+        }
+
+        function limparBusca() {
+            document.getElementById('campo-busca').value = '';
+            document.querySelectorAll('.filtro-tag').forEach(b => b.classList.remove('ativo'));
+            document.querySelector('.filtro-tag[data-filtro="todos"]').classList.add('ativo');
+            filtroTagAtual = 'todos';
+            filtrarCatalogo();
+        }
+    </script>
+
+</body>
+</html>
